@@ -20,11 +20,38 @@ OUTPUT_VIDEO = f"out/{FILE_NAME}_{uuid.uuid4()}.mp4"
 BACKGROUND_COLOR = (0, 0, 0)
 PROFILE_IMAGE_NAME = "default_profile_image"
 PROFILE_IMAGE_PATH = f"resources"
-CUSTOM_TEXT = "#Voice" 
+CUSTOM_TEXT = "Voice" 
 DURATION = 20  # Maximum recording duration 20s
 FPS = 30
-FONT_COLOR = "#fff"
-TEXT_X = 1800
+VIDEO_SIZE = (0, 0) #default 0x0
+MAX_HASHTAG_CHARACTERS = 20
+HASHTAG_FONT_SIZE = 28 # DEFAULT FONT SIZE
+AVATAR_SIZE=270
+
+VIDEO_SIZE_LIST = {
+    "default": (1920, 1080),
+    "short": (1080, 1920),
+}
+
+VIDEO_COLOR_THEME_LIST = {
+    "default": {
+        "background_color": "#B9CEEB",
+        "text_color": "#DEECFC"
+    },
+    "purple": {
+        "background_color": "#BD83CE",
+        "text_color": "#E5B0EA"
+    },
+    "DarkPurple": {
+        "background_color": "#3B1E54",
+        "text_color": "#9B7EBD"
+    },
+    "coffe": {
+        "background_color": "#7C444F",
+        "text_color": "#9F5255"
+    }
+}
+
 
 def list_microphones():
     print("Available audio devices:")
@@ -82,22 +109,21 @@ def record_audio(filename, max_duration, device=None):
 
     return actual_duration
 
-def create_video(font, background_color, profile_path, audio_path, text, duration):
-    
-    profile = ImageClip(profile_path).with_duration(duration).resized(height=240).with_position("center")
-
+def create_video(font, profile_path, audio_path, text, duration, font_size, avatar_height, theme):
+    profile = ImageClip(profile_path).with_duration(duration).resized(height=avatar_height).with_position("center")
+    video_font_color = ImageColor.getcolor(theme["text_color"], "RGB")
     text_clip = TextClip(
         font,
-        text,
-        font_size=23,
-        color=FONT_COLOR
+        f"#{text}",
+        font_size=int(font_size),
+        color=video_font_color
     )
-    text_clip = text_clip.with_duration(duration).with_position((TEXT_X, 1080 - 50))
+    text_clip = text_clip.with_duration(duration).with_position((20, 50))
 
     audio = AudioFileClip(audio_path)
 
-
-    video = CompositeVideoClip([profile, text_clip], size=(1920, 1080), bg_color=background_color)
+    video_bg_color = ImageColor.getcolor(theme["background_color"], "RGB")
+    video = CompositeVideoClip([profile, text_clip], size=VIDEO_SIZE, bg_color=video_bg_color)
     video = video.with_audio(audio)
 
     video.write_videofile(OUTPUT_VIDEO, fps=FPS, codec="libx264")
@@ -113,13 +139,13 @@ def create_video(font, background_color, profile_path, audio_path, text, duratio
 def hashtag():
     hashtag_text = input('Write a Hashtag (default is #Voice): ')
     text = None
-    if len(hashtag_text) > 8:  # Limit the hashtag length to 7 characters
-        print("Error: Max 8 characters")
+    if len(hashtag_text) > MAX_HASHTAG_CHARACTERS:  # Limit the hashtag length to 7 characters
+        print(f"Error: Max {MAX_HASHTAG_CHARACTERS} characters")
         return hashtag()  # Recursively ask for input if too long
     if hashtag_text != "":
-        text = hashtag_text
+        text = hashtag_text.replace("#","")
     else:
-        text = "#Voice"
+        text = "Voice"
 
     return text
 
@@ -147,21 +173,62 @@ def avatar_select():
         return avatar_select_image_name
     return avatar_select()
 
+def video_size(skipQuestion=False):
+    change_size = "yes"
+
+    if not skipQuestion:
+        change_size = input("Do you what to change the video voice note size (use 'yes' or 'no'): ")
+    
+    if change_size != "":
+        if change_size == "no":
+            return VIDEO_SIZE_LIST["default"], "default"
+        elif change_size == "yes":
+            video_size_input = input("Chose the video size ['default' (1920x1080) or 'short' (1080x1920)]: ")
+            if video_size_input in VIDEO_SIZE_LIST:
+                return VIDEO_SIZE_LIST[video_size_input], video_size_input
+            return video_size(True)
+    return video_size(True)
+    
+
+
+def choce_color_theme(skipQuestion=False):
+    change_theme = "yes"
+
+    if not skipQuestion:
+        change_theme = input("Do you what to change the color theme (video background & text color) (use 'yes' or 'no'): ")
+    
+    if change_theme != "":
+        if change_theme == "no":
+            return VIDEO_COLOR_THEME_LIST["default"]
+        elif change_theme == "yes":
+            video_theme_input = input("Chose the theme (use '-list' to see the theme list or use 'default'): ")
+            if video_theme_input in VIDEO_COLOR_THEME_LIST:
+                return VIDEO_COLOR_THEME_LIST[video_theme_input]
+            elif video_theme_input == "default":
+                return VIDEO_COLOR_THEME_LIST["default"]
+            elif video_theme_input == "-list":
+                for i, theme in enumerate(VIDEO_COLOR_THEME_LIST):
+                    if VIDEO_COLOR_THEME_LIST[theme]:
+                        bg_color = VIDEO_COLOR_THEME_LIST[theme]["background_color"]
+                        text_color = VIDEO_COLOR_THEME_LIST[theme]["text_color"]
+                      
+                        print(f"[{theme}]: background ({bg_color}) / text color ({text_color})")
+                    return choce_color_theme(True)
+            return choce_color_theme(True)
+    return choce_color_theme(False)
+    
+
+
 if __name__ == "__main__":
  
-
-    # Ask the user to select a microphone
     device_index = device_select()
-
-    bg_color = input('Color theme (voice note background color in hex default is #000): ')
-    CUSTOM_TEXT = hashtag()
-
-    if bg_color != "":
-        BACKGROUND_COLOR = ImageColor.getcolor(bg_color.replace(" ", "").replace("\t", ""), "RGB")
-    
     avatar = avatar_select()
+    get_video_size, v_type = video_size()
+    theme = choce_color_theme()
 
+    CUSTOM_TEXT = hashtag()
     PROFILE_IMAGE_NAME = avatar
+    VIDEO_SIZE = get_video_size
 
     img = Image.open(f"{PROFILE_IMAGE_PATH}/{PROFILE_IMAGE_NAME}.jpg")
     height, width = img.size
@@ -185,9 +252,14 @@ if __name__ == "__main__":
  
     PROFILE_IMAGE_PATH = f"temp/{PROFILE_IMAGE_NAME}.png"
 
+    if v_type == "short":
+        HASHTAG_FONT_SIZE = 46
+        AVATAR_SIZE = 350
+
     print("Info: you can stop the recording by pressing the 'r' key.")
     # Record the audio and get its actual duration
     audio_duration = record_audio(OUTPUT_AUDIO, DURATION, device_index)
 
+
     # Create video with the actual duration of the audio
-    create_video(FONT_PATH, BACKGROUND_COLOR, PROFILE_IMAGE_PATH, OUTPUT_AUDIO, CUSTOM_TEXT, audio_duration)
+    create_video(FONT_PATH, PROFILE_IMAGE_PATH, OUTPUT_AUDIO, CUSTOM_TEXT, audio_duration, HASHTAG_FONT_SIZE, AVATAR_SIZE, theme)
