@@ -243,6 +243,15 @@ def choce_color_theme(skipQuestion=False):
 
 
 if __name__ == "__main__":
+    
+    temp_folder = os.path.join("temp")
+    out_folder = os.path.join("out")
+    res_folder = os.path.join("resources")
+
+    if not os.path.exists(temp_folder):
+        os.mkdir("temp")
+    if not os.path.exists(out_folder):
+        os.mkdir("out")
  
     device_index = device_select()
     avatar = avatar_select()

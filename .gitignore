@@ -3,3 +3,6 @@
 *.png
 *.mp3
 hidden.jpg
+build
+dist
+*.spec
