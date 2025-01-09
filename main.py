@@ -190,6 +190,7 @@ def video_size(skipQuestion=False):
     return video_size(True)
     
 def display_color(hexcolor, string):
+    os.system("color")
     hexcolor = hexcolor.replace("#", "")
     r,g,b = bytes.fromhex(hexcolor)
 
