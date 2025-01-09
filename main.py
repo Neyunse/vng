@@ -22,7 +22,7 @@ PROFILE_IMAGE_NAME = "default_profile_image"
 PROFILE_IMAGE_PATH = f"resources"
 CUSTOM_TEXT = "#Voice" 
 DURATION = 20  # Maximum recording duration 20s
-FPS = 60
+FPS = 30
 FONT_COLOR = "#fff"
 TEXT_X = 1800
 
