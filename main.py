@@ -189,7 +189,15 @@ def video_size(skipQuestion=False):
             return video_size(True)
     return video_size(True)
     
+def display_color(hexcolor, string):
+    hexcolor = hexcolor.replace("#", "")
+    r,g,b = bytes.fromhex(hexcolor)
 
+    start = f"\x1b[38;2;{r};{g};{b}m"
+    end = "\x1b[0m"
+
+
+    return f"{start}{string}{end}"
 
 def choce_color_theme(skipQuestion=False):
     change_theme = "yes"
@@ -207,13 +215,28 @@ def choce_color_theme(skipQuestion=False):
             elif video_theme_input == "default":
                 return VIDEO_COLOR_THEME_LIST["default"]
             elif video_theme_input == "-list":
-                for i, theme in enumerate(VIDEO_COLOR_THEME_LIST):
-                    if VIDEO_COLOR_THEME_LIST[theme]:
-                        bg_color = VIDEO_COLOR_THEME_LIST[theme]["background_color"]
-                        text_color = VIDEO_COLOR_THEME_LIST[theme]["text_color"]
-                      
-                        print(f"[{theme}]: background ({bg_color}) / text color ({text_color})")
-                    return choce_color_theme(True)
+                def_bg_color = VIDEO_COLOR_THEME_LIST["default"]["background_color"]
+                def_text_color = VIDEO_COLOR_THEME_LIST["default"]["text_color"]
+
+                pur_bg_color = VIDEO_COLOR_THEME_LIST["purple"]["background_color"]
+                pur_text_color = VIDEO_COLOR_THEME_LIST["purple"]["text_color"]
+
+                Dpur_bg_color = VIDEO_COLOR_THEME_LIST["DarkPurple"]["background_color"]
+                Dpur_text_color = VIDEO_COLOR_THEME_LIST["DarkPurple"]["text_color"]
+
+                coffe_bg_color = VIDEO_COLOR_THEME_LIST["coffe"]["background_color"]
+                coffe_text_color = VIDEO_COLOR_THEME_LIST["coffe"]["text_color"]
+
+                print(f"[default]: background ({display_color(def_bg_color, def_bg_color)}) / text color ({display_color(def_text_color, def_text_color)})")
+                print(f"[purple]: background ({display_color(pur_bg_color, pur_bg_color)}) / text color ({display_color(pur_text_color, pur_text_color)})")
+                print(f"[DarkPurple]: background ({display_color(Dpur_bg_color, Dpur_bg_color)}) / text color ({display_color(Dpur_text_color, Dpur_text_color)})")
+                print(f"[DarkPurple]: background ({display_color(coffe_bg_color, coffe_bg_color)}) / text color ({display_color(coffe_text_color, coffe_text_color)})")
+
+
+
+                
+               
+                return choce_color_theme(True)
             return choce_color_theme(True)
     return choce_color_theme(False)
     
