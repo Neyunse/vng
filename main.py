@@ -230,7 +230,7 @@ def choce_color_theme(skipQuestion=False):
                 print(f"[default]: background ({display_color(def_bg_color, def_bg_color)}) / text color ({display_color(def_text_color, def_text_color)})")
                 print(f"[purple]: background ({display_color(pur_bg_color, pur_bg_color)}) / text color ({display_color(pur_text_color, pur_text_color)})")
                 print(f"[DarkPurple]: background ({display_color(Dpur_bg_color, Dpur_bg_color)}) / text color ({display_color(Dpur_text_color, Dpur_text_color)})")
-                print(f"[DarkPurple]: background ({display_color(coffe_bg_color, coffe_bg_color)}) / text color ({display_color(coffe_text_color, coffe_text_color)})")
+                print(f"[coffe]: background ({display_color(coffe_bg_color, coffe_bg_color)}) / text color ({display_color(coffe_text_color, coffe_text_color)})")
 
 
 
