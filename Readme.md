@@ -2,12 +2,16 @@
 
 You can create voice notes like Twitter voice notes to share in social networks!
 
+# Requerimientos
+
+* [Python 3](https://www.python.org/) 
+
 ## how to use
 
 0. clone the repo `git clone https://github.com/Neyunse/vng.git`
 1. install from src with `pip install -r requirements.txt`
 2. put inside resources your avatar with .jpg format. (400x400)
-3. run main.py and follow the instructions.
+3. run main.py and follow the instructions. `python main.py`
 4. share the .mp4 file!
 
 ## License
