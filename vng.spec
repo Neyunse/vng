@@ -3,7 +3,7 @@
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=["assets"],
     binaries=[],
     datas=[],
     hiddenimports=[],

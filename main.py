@@ -11,10 +11,10 @@ import soundfile as sf
 import uuid
 import keyboard   
 import time
-
+ 
 
 FILE_NAME = "voice_note"
-FONT_PATH = "resources/Roboto-Bold.ttf"
+FONT_PATH = "assets/Roboto-Bold.ttf"
 OUTPUT_AUDIO = "temp/audio.wav"
 OUTPUT_VIDEO = f"out/{FILE_NAME}_{uuid.uuid4()}.mp4"
 BACKGROUND_COLOR = (0, 0, 0)
@@ -68,8 +68,7 @@ def record_audio(filename, max_duration, device=None):
     fs = 44100  # Sample rate
     channels = 2  # Stereo
     dtype = 'float32'  # Audio format
-    block_duration = 1  # Duration of each block to record (in seconds)
-
+ 
     # Initialize empty list to store audio
     audio_data = []
 
@@ -128,13 +127,6 @@ def create_video(font, profile_path, audio_path, text, duration, font_size, avat
 
     video.write_videofile(OUTPUT_VIDEO, fps=FPS, codec="libx264")
     print(f"Video created: {OUTPUT_VIDEO}")
-
-    # remove temp files
-    os.unlink(os.path.join("temp", f"{PROFILE_IMAGE_NAME}.png"))
-    os.unlink(os.path.join("temp", "audio.wav"))
- 
-
-
 
 def hashtag():
     hashtag_text = input('Write a Hashtag (default is #Voice): ')
@@ -241,10 +233,7 @@ def choce_color_theme(skipQuestion=False):
             return choce_color_theme(True)
     return choce_color_theme(False)
     
-
-
-if __name__ == "__main__":
-    
+def _init_files():
     temp_folder = os.path.join("temp")
     out_folder = os.path.join("out")
     res_folder = os.path.join("resources")
@@ -253,6 +242,19 @@ if __name__ == "__main__":
         os.mkdir("temp")
     if not os.path.exists(out_folder):
         os.mkdir("out")
+    if not os.path.exists(res_folder):
+        os.mkdir("resources")
+    
+        default_avatar_rgb = Image.new('RGB', (400, 400), (228, 150, 150))
+
+        default_avatar_arr = np.array(default_avatar_rgb)
+
+        default_avatar_rgb = Image.fromarray(default_avatar_arr).save(f"resources/default_profile_image.jpg")
+
+
+if __name__ == "__main__":
+ 
+    _init_files()
  
     device_index = device_select()
     avatar = avatar_select()
@@ -296,3 +298,8 @@ if __name__ == "__main__":
 
     # Create video with the actual duration of the audio
     create_video(FONT_PATH, PROFILE_IMAGE_PATH, OUTPUT_AUDIO, CUSTOM_TEXT, audio_duration, HASHTAG_FONT_SIZE, AVATAR_SIZE, theme)
+
+    # Delete folders when all is done
+
+    os.unlink("temp")
+    
