@@ -3,9 +3,9 @@
 
 a = Analysis(
     ['main.py'],
-    pathex=["assets"],
+    pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('assets/Roboto-Bold.ttf', 'assets')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

@@ -11,10 +11,12 @@ import soundfile as sf
 import uuid
 import keyboard   
 import time
- 
+import platform
+
+bundle_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
 
 FILE_NAME = "voice_note"
-FONT_PATH = "assets/Roboto-Bold.ttf"
+FONT_PATH = os.path.abspath(os.path.join(bundle_dir, 'assets','Roboto-Bold.ttf'))
 OUTPUT_AUDIO = "temp/audio.wav"
 OUTPUT_VIDEO = f"out/{FILE_NAME}_{uuid.uuid4()}.mp4"
 BACKGROUND_COLOR = (0, 0, 0)
@@ -254,52 +256,74 @@ def _init_files():
 
 if __name__ == "__main__":
  
-    _init_files()
- 
-    device_index = device_select()
-    avatar = avatar_select()
-    get_video_size, v_type = video_size()
-    theme = choce_color_theme()
-
-    CUSTOM_TEXT = hashtag()
-    PROFILE_IMAGE_NAME = avatar
-    VIDEO_SIZE = get_video_size
-
-    img = Image.open(f"{PROFILE_IMAGE_PATH}/{PROFILE_IMAGE_NAME}.jpg")
-    height, width = img.size
-    new_width = 680
-    new_height = 680
-
-    img = img.resize((new_width, new_height), Image.LANCZOS)
-
-    h, w = img.size
-
-    lum_img = Image.new('L', [h, w], 0)
-
-    draw = ImageDraw.Draw(lum_img)
-    draw.pieslice([(0, 0), (h, w)], 0, 360, fill=255, outline="white")
-    img_arr = np.array(img)
-    lum_img_arr = np.array(lum_img)
-
-    final_img_arr = np.dstack((img_arr, lum_img_arr))
-
-    prf = Image.fromarray(final_img_arr).save(f"temp/{PROFILE_IMAGE_NAME}.png")
- 
-    PROFILE_IMAGE_PATH = f"temp/{PROFILE_IMAGE_NAME}.png"
-
-    if v_type == "short":
-        HASHTAG_FONT_SIZE = 46
-        AVATAR_SIZE = 350
-
-    print("Info: you can stop the recording by pressing the 'r' key.")
-    # Record the audio and get its actual duration
-    audio_duration = record_audio(OUTPUT_AUDIO, DURATION, device_index)
-
-
-    # Create video with the actual duration of the audio
-    create_video(FONT_PATH, PROFILE_IMAGE_PATH, OUTPUT_AUDIO, CUSTOM_TEXT, audio_duration, HASHTAG_FONT_SIZE, AVATAR_SIZE, theme)
-
-    # Delete folders when all is done
-
-    os.unlink("temp")
+    try:
+        _init_files()
     
+        device_index = device_select()
+        avatar = avatar_select()
+        get_video_size, v_type = video_size()
+        theme = choce_color_theme()
+
+        CUSTOM_TEXT = hashtag()
+        PROFILE_IMAGE_NAME = avatar
+        VIDEO_SIZE = get_video_size
+
+        img = Image.open(f"{PROFILE_IMAGE_PATH}/{PROFILE_IMAGE_NAME}.jpg")
+        height, width = img.size
+        new_width = 680
+        new_height = 680
+
+        img = img.resize((new_width, new_height), Image.LANCZOS)
+
+        h, w = img.size
+
+        lum_img = Image.new('L', [h, w], 0)
+
+        draw = ImageDraw.Draw(lum_img)
+        draw.pieslice([(0, 0), (h, w)], 0, 360, fill=255, outline="white")
+        img_arr = np.array(img)
+        lum_img_arr = np.array(lum_img)
+
+        final_img_arr = np.dstack((img_arr, lum_img_arr))
+
+        prf = Image.fromarray(final_img_arr).save(f"temp/{PROFILE_IMAGE_NAME}.png")
+    
+        PROFILE_IMAGE_PATH = f"temp/{PROFILE_IMAGE_NAME}.png"
+
+        if v_type == "short":
+            HASHTAG_FONT_SIZE = 46
+            AVATAR_SIZE = 350
+
+        print("Info: you can stop the recording by pressing the 'r' key.")
+        # Record the audio and get its actual duration
+        audio_duration = record_audio(OUTPUT_AUDIO, DURATION, device_index)
+
+
+        # Create video with the actual duration of the audio
+        create_video(FONT_PATH, PROFILE_IMAGE_PATH, OUTPUT_AUDIO, CUSTOM_TEXT, audio_duration, HASHTAG_FONT_SIZE, AVATAR_SIZE, theme)
+
+        # Delete temp when all is done
+
+        os.unlink(OUTPUT_AUDIO)
+        os.unlink(PROFILE_IMAGE_PATH)
+
+    
+    except Exception as e:
+        traceback_template = '''Exception error:
+  %(message)s\n
+
+  %(plataform)s
+ 
+  '''
+
+        traceback_details = {
+            'message' : e,
+            'plataform': f"{platform.system()}-{platform.version()}",
+        }    
+        
+        print(traceback_template % traceback_details)
+
+        with open('traceback-error.txt', 'w') as f:
+            f.write(traceback_template % traceback_details)
+            f.close()
+

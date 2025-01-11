@@ -7,3 +7,5 @@ build
 dist
 resources
 out
+token.txt
+__pycache__
