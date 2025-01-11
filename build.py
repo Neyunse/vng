@@ -49,7 +49,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     
     # DEPLOY & RELEASE 
-    parser.add_argument('--no-build', dest='skip_deploy', default=False, help='Skip the build process only publish the release', action="store_true")
+    parser.add_argument('--no-build', dest='skip_deploy', default=False, help='Skip the build process', action="store_true")
     parser.add_argument('--no-release', dest='skip_release', default=False, help='Skip the release process', action="store_true")
     parser.add_argument('--no-zip', dest='skip_zip', default=False, help='Skip the zip process', action="store_true")
 
