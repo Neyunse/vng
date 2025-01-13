@@ -14,6 +14,9 @@ import time
 import platform
 import typer
 import inquirer
+from pedalboard.io import AudioFile
+from pedalboard import *
+import noisereduce as nr
 
 bundle_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
 
@@ -26,7 +29,7 @@ DURATION = 20  # Maximum recording duration 20s
 FPS = 30
 MAX_HASHTAG_CHARACTERS = 20
 HASHTAG_FONT_SIZE = 28 # DEFAULT FONT SIZE
- 
+FS = 44100
 
 VIDEO_SIZE_LIST = {
     "default": (1920, 1080),
@@ -56,7 +59,6 @@ VIDEO_COLOR_THEME_LIST = {
 def record_audio(filename, max_duration, device=None):
     print("Recording audio... Press 'r' to stop.")
 
-    fs = 44100  # Sample rate
     channels = 2  # Stereo
     dtype = 'float32'  # Audio format
  
@@ -70,7 +72,7 @@ def record_audio(filename, max_duration, device=None):
         audio_data.append(indata.copy())
 
     # Open an input stream for recording
-    with sd.InputStream(samplerate=fs, channels=channels, dtype=dtype, callback=callback, device=device):
+    with sd.InputStream(samplerate=FS, channels=channels, dtype=dtype, callback=callback, device=device):
         start_time = time.time()
 
         while True:
@@ -91,10 +93,10 @@ def record_audio(filename, max_duration, device=None):
     audio_data = np.concatenate(audio_data, axis=0)
 
     # Save the recorded audio to a file
-    sf.write(filename, audio_data, fs)
+    sf.write(filename, audio_data, FS)
 
     # Calculate actual duration
-    actual_duration = len(audio_data) / fs
+    actual_duration = len(audio_data) / FS
     print(f"Audio stored in {filename}. Actual duration: {actual_duration:.2f} seconds.")
 
     return actual_duration
@@ -118,6 +120,31 @@ def create_video(font, profile_path, audio_path, text, duration, font_size, avat
 
     video.write_videofile(OUTPUT_VIDEO, fps=FPS, codec="libx264")
     print(f"Video created: {OUTPUT_VIDEO}")
+
+def AudioEnhancement(audioFile, fr):
+
+    file = 'temp/voice_note.wav'
+
+    with AudioFile(audioFile).resampled_to(fr) as f:
+        audio = f.read(f.frames)
+
+    reduced_noise = nr.reduce_noise(y=audio, sr=fr, stationary=True, prop_decrease=0.75)
+
+    board = Pedalboard([
+        NoiseGate(threshold_db=-30, ratio=1.5, release_ms=250),
+        Compressor(threshold_db=-16, ratio=2.5),
+        LowShelfFilter(cutoff_frequency_hz=400, gain_db=10, q=1),
+        Gain(gain_db=10)
+    ])
+
+    effected = board(reduced_noise, fr)
+
+
+    with AudioFile(file, 'w', fr, effected.shape[0]) as f:
+        f.write(effected)
+    
+    return file
+
 
 
 def display_color(hexcolor, string):
@@ -204,14 +231,18 @@ def App():
     # Record the audio and get its actual duration
     audio_duration = record_audio(OUTPUT_AUDIO, DURATION, None)
 
+    Enhancement = AudioEnhancement(OUTPUT_AUDIO, FS)
 
+    time.sleep(2)
     # Create video with the actual duration of the audio
-    create_video(FONT_PATH, im_path, OUTPUT_AUDIO, hashtag, audio_duration, hashtag_font_size, avatar_size, VIDEO_COLOR_THEME_LIST[color_theme], VIDEO_SIZE_LIST[video_size])
+    create_video(FONT_PATH, im_path, Enhancement, hashtag, audio_duration, hashtag_font_size, avatar_size, VIDEO_COLOR_THEME_LIST[color_theme], VIDEO_SIZE_LIST[video_size])
 
     # Delete temp when all is done
 
     os.unlink(OUTPUT_AUDIO)
     os.unlink(im_path)
+    os.unlink(Enhancement)
+
 
 
 if __name__ == "__main__":
