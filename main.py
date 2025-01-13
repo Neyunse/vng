@@ -17,13 +17,15 @@ import inquirer
 from pedalboard.io import AudioFile
 from pedalboard import *
 import noisereduce as nr
+from datetime import datetime
+
 
 bundle_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
 
 FILE_NAME = "voice_note"
 FONT_PATH = os.path.abspath(os.path.join(bundle_dir, 'assets','Roboto-Bold.ttf'))
 OUTPUT_AUDIO = "temp/audio.wav"
-OUTPUT_VIDEO = f"out/{FILE_NAME}_{uuid.uuid4()}.mp4"
+OUTPUT_VIDEO = f"out/{FILE_NAME}"
 PROFILE_IMAGE_PATH = f"resources"
 DURATION = 20  # Maximum recording duration 20s
 FPS = 30
@@ -118,7 +120,9 @@ def create_video(font, profile_path, audio_path, text, duration, font_size, avat
     video = CompositeVideoClip([profile, text_clip], size=video_size, bg_color=video_bg_color)
     video = video.with_audio(audio)
 
-    video.write_videofile(OUTPUT_VIDEO, fps=FPS, codec="libx264")
+    date_fmt = datetime.now().strftime("%Y_%B_%d_%H_%M_%S")
+
+    video.write_videofile(f"{OUTPUT_VIDEO}_{date_fmt}.mp4", fps=FPS, codec="libx264")
     print(f"Video created: {OUTPUT_VIDEO}")
 
 def AudioEnhancement(audioFile, fr):
