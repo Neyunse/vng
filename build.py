@@ -20,7 +20,7 @@ def create_executable(skip_deploy):
     if not skip_deploy:
         title = display_color("#008000","[BUILDING THE EXE FILE]")
         print(f"{title}")
-        subprocess.call(f"pyinstaller vng.spec") 
+        subprocess.call(f"pyinstaller --clean vng.spec") 
 
 def ZipAndPublish(skip_release, skip_zip):
     

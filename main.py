@@ -58,14 +58,21 @@ VIDEO_COLOR_THEME_LIST = {
 }
 
 
-def record_audio(filename, max_duration, device=None):
+def record_audio(filename, max_duration):
     print("Recording audio... Press 'r' to stop.")
-
-    channels = 2  # Stereo
+    
+    default_input_device = sd.default.device[0]
+    
+    device_info = sd.query_devices(default_input_device)
+    channels = min(device_info['max_input_channels'], 2) # 1 mono, 2 stereo
+    
     dtype = 'float32'  # Audio format
  
     # Initialize empty list to store audio
     audio_data = []
+    
+    channel_mode = "mono" if channels == 1 else "stereo"
+    print(f"Using input device: {device_info['name']} ({channel_mode})")
 
     # Define a callback function to record in chunks
     def callback(indata, frames, time, status):
@@ -73,24 +80,28 @@ def record_audio(filename, max_duration, device=None):
             print(status, file=sys.stderr)
         audio_data.append(indata.copy())
 
-    # Open an input stream for recording
-    with sd.InputStream(samplerate=FS, channels=channels, dtype=dtype, callback=callback, device=device):
-        start_time = time.time()
+    # Open an input stream for recording    
+    try:
+        with sd.InputStream(samplerate=FS, channels=channels, dtype=dtype, callback=callback, device=default_input_device):
+            start_time = time.time()
 
-        while True:
-            # Check if the user pressed 'r' to stop recording
-            if keyboard.is_pressed('r'):
-                print("Recording stopped.")
-                break
+            while True:
+                # Check if the user pressed 'r' to stop recording
+                if keyboard.is_pressed('r'):
+                    print("Recording stopped.")
+                    break
 
-            # Check if we've reached the max duration
-            elapsed_time = time.time() - start_time
-            if elapsed_time >= max_duration:
-                print(f"Maximum duration reached: {elapsed_time:.2f} seconds.")
-                break
+                # Check if we've reached the max duration
+                elapsed_time = time.time() - start_time
+                if elapsed_time >= max_duration:
+                    print(f"Maximum duration reached: {elapsed_time:.2f} seconds.")
+                    break
 
-            time.sleep(0.1)  # Sleep for a short time to check the key press
-
+                time.sleep(0.1)  # Sleep for a short time to check the key press
+    except Exception as e:
+        print(f"[ERROR] InputStream failed: {e}")
+        return 0
+    
     # Concatenate all recorded blocks
     audio_data = np.concatenate(audio_data, axis=0)
 
@@ -233,7 +244,7 @@ def App():
 
     print("Info: you can stop the recording by pressing the 'r' key.")
     # Record the audio and get its actual duration
-    audio_duration = record_audio(OUTPUT_AUDIO, DURATION, None)
+    audio_duration = record_audio(OUTPUT_AUDIO, DURATION)
 
     Enhancement = AudioEnhancement(OUTPUT_AUDIO, FS)
 
